@@ -94,4 +94,5 @@ void gunrock_sssp(
 
 PYBIND11_MODULE(gunrock_sssp, m) {
   m.def("gunrock_sssp", gunrock_sssp<int,int,float>);
+  m.def("gunrock_sssp", gunrock_sssp<int,int,int>);
 }
