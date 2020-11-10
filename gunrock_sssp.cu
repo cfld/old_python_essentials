@@ -1,5 +1,6 @@
-#include <sstream>
+#include <torch/extension.h>
 #include <iostream>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -38,22 +39,20 @@ void cuda2numpy(py::array_t<T> x, T* x_dptr) {
 
 template<typename vertex_t, typename edge_t, typename weight_t>
 void gunrock_sssp(
-  vertex_t              n_vertices,
-  edge_t                n_edges,
-  py::array_t<vertex_t> offsets_arr,
-  py::array_t<edge_t>   indices_arr,
-  py::array_t<weight_t> data_arr,
-  vertex_t              single_source,
-  py::array_t<weight_t> distances_arr,
-  py::array_t<vertex_t> predecessors_arr
+  vertex_t      n_vertices,
+  edge_t        n_edges,
+  torch::Tensor offsets_arr,
+  torch::Tensor indices_arr,
+  torch::Tensor data_arr,
+  vertex_t      single_source,
+  torch::Tensor distances_arr,
+  torch::Tensor predecessors_arr
 ) {
-  
-  // Copy data to GPU
-  auto d_offsets      = numpy2cuda(offsets_arr);
-  auto d_indices      = numpy2cuda(indices_arr);
-  auto d_data         = numpy2cuda(data_arr);
-  auto d_distances    = numpy2cuda(distances_arr);
-  auto d_predecessors = numpy2cuda(predecessors_arr);
+  auto d_offsets      = offsets_arr.data_ptr<vertex_t>();
+  auto d_indices      = indices_arr.data_ptr<edge_t>();
+  auto d_data         = data_arr.data_ptr<weight_t>();
+  auto d_distances    = distances_arr.data_ptr<weight_t>();
+  auto d_predecessors = predecessors_arr.data_ptr<vertex_t>();
   
   // Build graph + meta
   auto G = graph::build::from_csr_t<memory_space_t::device>(
@@ -79,20 +78,9 @@ void gunrock_sssp(
     d_distances,
     d_predecessors
   );
-  
-  // Copy results back to numpy
-  cuda2numpy(distances_arr, d_distances);
-  cuda2numpy(predecessors_arr, d_predecessors);
-  
-  // Free memory
-  cudaFree(d_offsets);
-  cudaFree(d_indices);
-  cudaFree(d_data);
-  cudaFree(d_distances);
-  cudaFree(d_predecessors);
 }
+
 
 PYBIND11_MODULE(gunrock_sssp, m) {
   m.def("gunrock_sssp", gunrock_sssp<int,int,float>);
-  m.def("gunrock_sssp", gunrock_sssp<int,int,int>);
 }

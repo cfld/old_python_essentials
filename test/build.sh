@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# install.sh
+# build.sh
 
 rm -rf build
 mkdir build
