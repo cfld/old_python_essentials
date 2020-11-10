@@ -13,8 +13,8 @@ from scipy.io import mmread
 np.set_printoptions(linewidth=240)
 
 # Load graph
-# csr = mmread('chesapeake.mtx').tocsr()
-csr = mmread('/home/ubuntu/projects/gunrock/dataset/large/delaunay_n13/delaunay_n13.mtx').tocsr()
+csr = mmread('chesapeake.mtx').tocsr()
+# csr = mmread('/home/ubuntu/projects/gunrock/dataset/large/delaunay_n13/delaunay_n13.mtx').tocsr()
 
 n_vertices = csr.shape[0]
 n_edges    = csr.nnz

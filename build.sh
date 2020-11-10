@@ -9,5 +9,5 @@ cmake ..
 make -j12
 cd ..
 
-# python test.py
-python test_pytorch.py
+python test.py
+
