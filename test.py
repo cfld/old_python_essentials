@@ -28,7 +28,7 @@ distances    = torch.zeros(csr.shape[0]).float().cuda()
 predecessors = torch.zeros(csr.shape[0]).int().cuda()
 
 # Create graph
-G = make_graph(n_vertices, n_vertices, n_edges, indptr, indices, data)
+G = make_graph(n_vertices, n_edges, indptr, indices, data)
 
 for single_source in range(n_vertices):
   _ = gunrock_sssp(G, single_source, distances, predecessors)
