@@ -12,31 +12,6 @@ namespace py = pybind11;
 using namespace gunrock;
 using namespace memory;
 
-// --
-// Helpers
-
-template <typename T>
-auto numpy2cuda(py::array_t<T> x) {
-  py::buffer_info ha = x.request();
-  T* x_hptr          = reinterpret_cast<T*>(ha.ptr);
-  
-  T* x_dptr;
-  cudaMalloc(&x_dptr, ha.shape[0] * sizeof(T));
-  cudaMemcpy(x_dptr, x_hptr, ha.shape[0] * sizeof(T), cudaMemcpyHostToDevice);
-  return x_dptr;
-}
-
-template <typename T>
-void cuda2numpy(py::array_t<T> x, T* x_dptr) {
-  py::buffer_info ha = x.request();
-  T* x_hptr          = reinterpret_cast<T*>(ha.ptr);
-
-  cudaMemcpy(x_hptr, x_dptr, ha.shape[0] * sizeof(T), cudaMemcpyDeviceToHost);
-}
-
-// --
-// Runner
-
 template<typename vertex_t, typename edge_t, typename weight_t>
 void gunrock_sssp(
   vertex_t      n_vertices,

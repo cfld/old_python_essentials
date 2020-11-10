@@ -3,7 +3,7 @@ import torch
 import sys
 sys.path.append('.')
 sys.path.append('build')
-from gunrock_sssp import *
+from gunrock_sssp import gunrock_sssp
 
 import numpy as np
 from time import time
@@ -14,7 +14,6 @@ np.set_printoptions(linewidth=240)
 
 # Load graph
 csr = mmread('chesapeake.mtx').tocsr()
-# csr = mmread('/home/ubuntu/projects/gunrock/dataset/large/delaunay_n13/delaunay_n13.mtx').tocsr()
 
 n_vertices = csr.shape[0]
 n_edges    = csr.nnz
@@ -29,7 +28,7 @@ data     = torch.FloatTensor(csr.data).cuda()
 distances    = torch.zeros(csr.shape[0]).float().cuda()
 predecessors = torch.zeros(csr.shape[0]).int().cuda()
 
-for single_source in trange(20):
-  _ = pt_sssp(n_vertices, n_edges, indptr, indices, data, single_source, distances, predecessors)
+for single_source in range(n_vertices):
+  _ = gunrock_sssp(n_vertices, n_edges, indptr, indices, data, single_source, distances, predecessors)
   torch.cuda.synchronize()
-  print(distances.cpu().numpy()[:10])
+  print(distances.cpu().numpy())
