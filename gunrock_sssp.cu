@@ -1,10 +1,7 @@
-#include <torch/extension.h>
-#include <iostream>
-
 #include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
-#include <pybind11/stl.h>
 
+#include <iostream>
+#include <torch/extension.h>
 #include <gunrock/applications/sssp/sssp_implementation.hxx>
 
 namespace py = pybind11;
