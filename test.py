@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+
+"""
+  test.py
+"""
+
 import torch
 
 import sys
@@ -23,12 +29,12 @@ indptr   = torch.IntTensor(csr.indptr).cuda()
 indices  = torch.IntTensor(csr.indices).cuda()
 data     = torch.FloatTensor(csr.data).cuda()
 
-# Allocate host memory for output
+# Allocate memory for output
 distances    = torch.zeros(csr.shape[0]).float().cuda()
 predecessors = torch.zeros(csr.shape[0]).int().cuda()
 
 # Create graph
-G = make_graph(n_vertices, n_edges, indptr, indices, data)
+G = GunrockGraph(n_vertices, n_edges, indptr, indices, data)
 
 for single_source in range(n_vertices):
   _ = gunrock_sssp(G, single_source, distances, predecessors)
