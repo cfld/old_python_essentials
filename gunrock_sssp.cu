@@ -13,7 +13,7 @@ using namespace gunrock;
 using namespace memory;
 
 template <typename graph_type, typename meta_type>
-struct GunrockGraph {
+struct PyGunrockGraph {
   using vertex_t = typename graph_type::vertex_type;
   using edge_t   = typename graph_type::edge_type;
   using weight_t = typename graph_type::weight_type;
@@ -21,7 +21,7 @@ struct GunrockGraph {
   std::shared_ptr<graph_type> G;
   std::shared_ptr<meta_type> meta;
   
-  GunrockGraph(
+  PyGunrockGraph(
     vertex_t const& n_vertices,
     edge_t const& n_edges,
     torch::Tensor Ap_arr,
@@ -48,21 +48,20 @@ struct GunrockGraph {
 
 
 template <
-  typename graph_type,
-  typename meta_type,
-  typename vertex_t = typename graph_type::vertex_type,
-  typename edge_t   = typename graph_type::edge_type,
-  typename weight_t = typename graph_type::weight_type
+  typename pygraph_t,
+  typename vertex_t = typename pygraph_t::vertex_t,
+  typename edge_t   = typename pygraph_t::edge_t,
+  typename weight_t = typename pygraph_t::weight_t
 >
 void gunrock_sssp(
-  GunrockGraph<graph_type, meta_type>& GG,
+  pygraph_t&    PyG,
   vertex_t      single_source,
   torch::Tensor distances,
   torch::Tensor predecessors
 ) {
   sssp::run(
-    GG.G,
-    GG.meta,
+    PyG.G,
+    PyG.meta,
     single_source,
     distances.data_ptr<weight_t>(),
     predecessors.data_ptr<vertex_t>()
@@ -87,15 +86,15 @@ PYBIND11_MODULE(gunrock_sssp, m) {
     memory_space_t::host, vertex_t, edge_t, weight_t,
     graph::graph_csr_t<memory_space_t::host, vertex_t, edge_t, weight_t>>;
 
-  using gungraph_t = GunrockGraph<graph_type, meta_type>;
+  using pygraph_t = PyGunrockGraph<graph_type, meta_type>;
 
   // --
   // Classes
 
-  py::class_<gungraph_t>(m, "GunrockGraph")
+  py::class_<pygraph_t>(m, "GunrockGraph")
     .def(py::init<vertex_t, edge_t, torch::Tensor, torch::Tensor, torch::Tensor>())
-    .def("get_number_of_vertices", &gungraph_t::get_number_of_vertices)
-    .def("get_number_of_edges",    &gungraph_t::get_number_of_edges);
+    .def("get_number_of_vertices", &pygraph_t::get_number_of_vertices)
+    .def("get_number_of_edges",    &pygraph_t::get_number_of_edges);
 
-  m.def("gunrock_sssp",  gunrock_sssp<graph_type, meta_type>);
+  m.def("gunrock_sssp",  gunrock_sssp<pygraph_t>);
 }
