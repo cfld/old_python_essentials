@@ -32,8 +32,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-extended-lambda")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-relaxed-constexpr")
 
-set(ESSENTIALS_INCLUDE_DIR /home/ubuntu/projects/essentials CACHE STRING "Path to gunrock/essentials includes") # c6a3115bc88058e2b1eb8b8155a99ba008a67592
-cuda_add_library(pygunrock SHARED interface.cu "${ESSENTIALS_INCLUDE_DIR}/externals/mtx/mmio.cpp")
+set(ESSENTIALS_INCLUDE_DIR /home/ubuntu/projects/essentials CACHE STRING "Path to `gunrock/essentials` includes") # c6a3115bc88058e2b1eb8b8155a99ba008a67592
+cuda_add_library(pygunrock SHARED src/interface.cu "${ESSENTIALS_INCLUDE_DIR}/externals/mtx/mmio.cpp")
 
 target_include_directories(
   pygunrock
