@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.6)
-project(gunrock_sssp)
+project(pygunrock)
 
-# For Pytorch support
-set(CMAKE_PREFIX_PATH "/home/ubuntu/anaconda3/pkgs/pytorch-1.7.0-py3.7_cuda11.0.221_cudnn8.0.3_0/lib/python3.7/site-packages/torch")
-set(CUDNN_LIBRARY_PATH "$ENV{HOME}/anaconda3/pkgs/cudnn-8.0.0-cuda11.0_0/lib/libcudnn.so")
-set(CUDNN_INCLUDE_PATH "$ENV{HOME}/anaconda3/pkgs/cudnn-8.0.0-cuda11.0_0/include")
+set(ANACONDA_PKG_PATH "$ENV{HOME}/anaconda3/pkgs")
+
+set(CMAKE_PREFIX_PATH  "${ANACONDA_PKG_PATH}/pytorch-1.7.0-py3.7_cuda11.0.221_cudnn8.0.3_0/lib/python3.7/site-packages/torch")
+set(CUDNN_LIBRARY_PATH "${ANACONDA_PKG_PATH}/cudnn-8.0.0-cuda11.0_0/lib/libcudnn.so")
+set(CUDNN_INCLUDE_PATH "${ANACONDA_PKG_PATH}/cudnn-8.0.0-cuda11.0_0/include")
 
 set(PYTHON_INCLUDE_PATH "$ENV{HOME}/anaconda3/include/python3.7m")
-set(PYTHON_LIBRARIES "$ENV{HOME}/anaconda3/lib/libpython3.7m.so")
-set(ESSENTIALS_INCLUDE_DIR /home/ubuntu/projects/essentials CACHE STRING "Path to essentials includes")
+set(PYTHON_LIBRARIES    "$ENV{HOME}/anaconda3/lib/libpython3.7m.so")
 
 find_package(CUDA REQUIRED)
 find_package(PythonInterp 3.7 REQUIRED)
@@ -26,14 +26,17 @@ link_directories(
   /usr/local/cuda/lib64
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-extended-lambda")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-relaxed-constexpr")
 
-cuda_add_library(gunrock_sssp SHARED gunrock_sssp.cu /home/ubuntu/projects/essentials/externals/mtx/mmio.cpp)
+set(ESSENTIALS_INCLUDE_DIR /home/ubuntu/projects/essentials CACHE STRING "Path to gunrock/essentials includes") # c6a3115bc88058e2b1eb8b8155a99ba008a67592
+cuda_add_library(pygunrock SHARED interface.cu "${ESSENTIALS_INCLUDE_DIR}/externals/mtx/mmio.cpp")
 
 target_include_directories(
-  gunrock_sssp
+  pygunrock
   PRIVATE
   "${ESSENTIALS_INCLUDE_DIR}/"
   "${ESSENTIALS_INCLUDE_DIR}/externals/moderngpu/src"
@@ -42,6 +45,6 @@ target_include_directories(
   "${TORCH_INCLUDE_DIRS}"
 )
 
-target_link_libraries(gunrock_sssp ${PYTHON_LIBRARIES} cudart ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY})
+target_link_libraries(pygunrock ${PYTHON_LIBRARIES} ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY} cudart)
 
-set_target_properties(gunrock_sssp PROPERTIES PREFIX "")
+set_target_properties(pygunrock PROPERTIES PREFIX "")

@@ -9,7 +9,7 @@ import torch
 import sys
 sys.path.append('.')
 sys.path.append('build')
-from gunrock_sssp import *
+import pygunrock as pyg
 
 import numpy as np
 from time import time
@@ -34,8 +34,8 @@ distances    = torch.zeros(csr.shape[0]).float().cuda()
 predecessors = torch.zeros(csr.shape[0]).int().cuda()
 
 # Create graph
-G = GunrockGraph(n_vertices, n_edges, indptr, indices, data)
+G = pyg.Graph(n_vertices, n_edges, indptr, indices, data)
 
 for single_source in range(n_vertices):
-  _ = gunrock_sssp(G, single_source, distances, predecessors)
+  _ = pyg.sssp(G, single_source, distances, predecessors)
   print(distances.cpu().numpy())
