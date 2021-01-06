@@ -15,6 +15,7 @@ find_package(PythonInterp 3.7 REQUIRED)
 find_package(PythonLibs 3.7 REQUIRED)
 
 find_package(Torch REQUIRED)
+message(${TORCH_INSTALL_PREFIX})
 find_library(TORCH_PYTHON_LIBRARY torch_python PATHS "${TORCH_INSTALL_PREFIX}/lib")
 
 include_directories(
@@ -34,6 +35,7 @@ set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-extended-lambda")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --expt-relaxed-constexpr")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --generate-line-info")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -O3")
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -DSM_TARGET=61") # ?? Should this be auto-detected?
 
 set(ESSENTIALS_INCLUDE_DIR /home/ubuntu/projects/essentials CACHE STRING "Path to `gunrock/essentials` includes") # cafda937b683466484d0a6f0c3b721321cc98f59
 cuda_add_library(pygunrock SHARED src/interface.cu "${ESSENTIALS_INCLUDE_DIR}/externals/mtx/mmio.cpp")

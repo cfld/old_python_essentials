@@ -19,8 +19,8 @@ from scipy.io import mmread
 np.set_printoptions(linewidth=240)
 
 # Load graph
-# csr = mmread('chesapeake.mtx').tocsr()
-csr = mmread('cit-Patents-sub.mtx').tocsr()
+csr = mmread('chesapeake.mtx').tocsr()
+# csr = mmread('cit-Patents-sub.mtx').tocsr()
 
 n_vertices = csr.shape[0]
 n_edges    = csr.nnz
@@ -35,11 +35,7 @@ distances    = torch.zeros(csr.shape[0]).float().cuda()
 predecessors = torch.zeros(csr.shape[0]).int().cuda()
 
 # Create graph
-G = pyg.Graph(n_vertices, n_edges, indptr, indices, data)
-
-t = time()
-for single_source in trange(1000):
-  _ = pyg.sssp(G, single_source, distances, predecessors)
-  # print(distances.cpu().numpy())
-
-print(time() - t)
+single_source = 0
+G = pyg.from_csr(n_vertices, n_edges, indptr, indices, data)
+_ = pyg.sssp(G, single_source, distances, predecessors)
+print(distances)
