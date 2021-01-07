@@ -35,7 +35,10 @@ distances    = torch.zeros(csr.shape[0]).float().cuda()
 predecessors = torch.zeros(csr.shape[0]).int().cuda()
 
 # Create graph
-single_source = 0
-G = pyg.from_csr(n_vertices, n_edges, indptr, indices, data)
-_ = pyg.sssp(G, single_source, distances, predecessors)
-print(distances)
+for single_source in [0, 1, 2]:
+  distances.zero_()
+  predecessors.zero_()
+
+  G = pyg.from_csr(n_vertices, n_vertices, n_edges, indptr, indices, data)
+  _ = pyg.sssp(G, single_source, distances, predecessors)
+  print(distances)

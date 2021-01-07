@@ -3,38 +3,37 @@
 // ?? Is there a way to automatically unwrap torch::Tensor to pointers, to reduce amount of glue code?
 
 #include <pybind11/pybind11.h>
-
 #include <torch/extension.h>
-
 #include "gunrock/applications/sssp.hxx"
 
 namespace py = pybind11;
 using namespace gunrock;
-using namespace memory;
 
 // --
 // Builder
 
 template <
-  typename graph_type,
-  typename vertex_type = typename graph_type::vertex_type,
-  typename edge_type   = typename graph_type::edge_type,
-  typename weight_type = typename graph_type::weight_type
+  memory::memory_space_t space,
+  graph::view_t build_views,
+  typename vertex_type, 
+  typename edge_type, 
+  typename weight_type
 >
-graph_type from_csr(
-    vertex_type const& n_vertices,
+auto from_csr(
+    vertex_type const& n_rows,
+    vertex_type const& n_cols,
     edge_type const& n_edges,
     torch::Tensor Ap_arr,
-    torch::Tensor Aj_arr,
-    torch::Tensor Ax_arr 
+    torch::Tensor J_arr,
+    torch::Tensor X_arr
 ) {
-  return graph::build::from_csr<memory_space_t::device, graph::view_t::csr>(
-        n_vertices,                      // rows
-        n_vertices,                      // columns
+  return graph::build::from_csr<space, build_views>(
+        n_rows,                          // rows
+        n_cols,                          // columns
         n_edges,                         // nonzeros
         Ap_arr.data_ptr<edge_type>(),    // row_offsets
-        Aj_arr.data_ptr<vertex_type>(),  // column_indices
-        Ax_arr.data_ptr<weight_type>()   // values
+        J_arr.data_ptr<vertex_type>(),   // column_indices
+        X_arr.data_ptr<weight_type>()    // values
     );
 }
 
@@ -66,23 +65,30 @@ PYBIND11_MODULE(pygunrock, m) {
   // --
   // Typedefs
   
-  using vertex_t = int;
-  using edge_t   = int;
-  using weight_t = float;
+  using vertex_t    = int;
+  using edge_t      = int;
+  using weight_t    = float;
   
-  using csr_graph_type = gunrock::graph::graph_t<gunrock::memory::device, vertex_t, edge_t, weight_t, 
-    std::conditional_t<true, gunrock::graph::graph_csr_t<vertex_t, edge_t, weight_t>, gunrock::graph::empty_csr_t>, 
-    std::conditional_t<false, gunrock::graph::graph_csc_t<vertex_t, edge_t, weight_t>, gunrock::graph::empty_csc_t>, 
-    std::conditional_t<false, gunrock::graph::graph_coo_t<vertex_t, edge_t, weight_t>, gunrock::graph::empty_coo_t>
-  >;
+  constexpr graph::memory_space_t space = memory::memory_space_t::device;
+  constexpr graph::view_t build_views = graph::view_t::csr;
+  
+  using graph_type = decltype(from_csr<space, build_views, vertex_t, edge_t, weight_t>(
+    std::declval<vertex_t>(),
+    std::declval<vertex_t>(),
+    std::declval<edge_t>(),
+    std::declval<torch::Tensor>(),
+    std::declval<torch::Tensor>(),
+    std::declval<torch::Tensor>()
+  ));
   
   // --
   // Interface
   
-  py::class_<csr_graph_type>(m, "CSRGraph")
-    .def("get_number_of_vertices", &csr_graph_type::get_number_of_vertices)
-    .def("get_number_of_edges",    &csr_graph_type::get_number_of_edges);
-  
-  m.def("from_csr", from_csr<csr_graph_type>);
-  m.def("sssp", sssp_run<csr_graph_type>);
+  py::class_<graph_type>(m, "CSRGraph")
+    .def("get_number_of_vertices" , &graph_type::get_number_of_vertices)
+    .def("get_number_of_edges"    , &graph_type::get_number_of_edges)
+    .def("is_directed"            , &graph_type::is_directed);
+
+  m.def("from_csr", from_csr<space, build_views, vertex_t, edge_t, weight_t>);
+  m.def("sssp",     sssp_run<graph_type>);
 }
