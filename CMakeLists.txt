@@ -43,10 +43,10 @@ cuda_add_library(pygunrock SHARED src/interface.cu "${ESSENTIALS_INCLUDE_DIR}/ex
 target_include_directories(
   pygunrock
   PRIVATE
-  "${ESSENTIALS_INCLUDE_DIR}/"
+  "${ESSENTIALS_INCLUDE_DIR}/include"
+  "${ESSENTIALS_INCLUDE_DIR}/externals"
   "${ESSENTIALS_INCLUDE_DIR}/externals/moderngpu/src"
   "${ESSENTIALS_INCLUDE_DIR}/externals/rapidjson/include"
-  "${ESSENTIALS_INCLUDE_DIR}/externals/mtx"
   "${TORCH_INCLUDE_DIRS}"
 )
 

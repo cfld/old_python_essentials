@@ -42,3 +42,4 @@ for single_source in [0, 1, 2]:
   G = pyg.from_csr(n_vertices, n_vertices, n_edges, indptr, indices, data)
   _ = pyg.sssp(G, single_source, distances, predecessors)
   print(distances)
+  print(predecessors)
